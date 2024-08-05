@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class HistoryServiceImpl implements HistoryService {
+public class InMemoryHistoryService implements HistoryService {
 
     private final Map<Long, List<String>> chatToMessagesMap;
 
-    public HistoryServiceImpl (Map<Long, List<String>> chatToMessagesMap) {
+    public InMemoryHistoryService(Map<Long, List<String>> chatToMessagesMap) {
         this.chatToMessagesMap = chatToMessagesMap;
 
     }
