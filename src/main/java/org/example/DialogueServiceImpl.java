@@ -1,6 +1,7 @@
 package org.example;
 
 import java.time.LocalTime;
+import java.util.List;
 
 public class DialogueServiceImpl implements DialogueService {
     private final HistoryService historyService;
@@ -28,7 +29,16 @@ public class DialogueServiceImpl implements DialogueService {
                 text = "Сейчас: " + currentTime;
             }
             case ("история"), ("История") -> {
-                text = String.join(", ", historyService.getHistory(chatId));
+                List<String> history = historyService.getHistory(chatId);
+                if (history.isEmpty()) {
+                    text = "История пуста";
+                } else {
+                    text = String.join(", ", history);
+                }
+            }
+            case ("очистить историю"), ("Очистить историю") -> {
+                historyService.deleteHistory(chatId);
+                text = "Очистка выполнена";
             }
             default -> {
                 text = "Вы сказали: " + message;

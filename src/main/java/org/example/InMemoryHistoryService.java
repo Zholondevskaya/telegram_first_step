@@ -29,4 +29,10 @@ public class InMemoryHistoryService implements HistoryService {
     public List<String> getHistory(long chatId) {
         return chatToMessagesMap.get(chatId);
     }
+
+    @Override
+    public void deleteHistory(long chatId) {
+        // TODO implement
+        throw new UnsupportedOperationException("deleteHistory method not implemented yet");
+    }
 }
