@@ -23,16 +23,15 @@ public class PostgresHistoryService implements HistoryService {
             WHERE chat_id = ?
             """;
 
-    private final String url = "jdbc:postgresql://localhost:5432/telegram";
-    private final String user = "postgres";
-    private final String password = "postgres";
+    private final String url;
+    private final String user;
+    private final String password;
 
-
-//    public PostgresHistoryService (String url, String user, String password) {
-//        this.url = url;
-//        this.user = user;
-//        this.password = password;
-//    }
+    public PostgresHistoryService(ConfigurationService configuration){
+        this.url = configuration.getConfigurationProperty("postgres.url");
+        this.user = configuration.getConfigurationProperty("postgres.user");
+        this.password = configuration.getConfigurationProperty("postgres.password");
+    }
 
     @Override
     public void addHistory(long chatId, String message) {

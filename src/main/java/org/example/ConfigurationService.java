@@ -1,5 +1,5 @@
 package org.example;
 
 public interface ConfigurationService {
-    String getToken();
+    String getConfigurationProperty(String propertyName);
 }
