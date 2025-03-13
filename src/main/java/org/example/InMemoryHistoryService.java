@@ -1,6 +1,7 @@
 package org.example;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -8,9 +9,8 @@ public class InMemoryHistoryService implements HistoryService {
 
     private final Map<Long, List<String>> chatToMessagesMap;
 
-    public InMemoryHistoryService(Map<Long, List<String>> chatToMessagesMap) {
-        this.chatToMessagesMap = chatToMessagesMap;
-
+    public InMemoryHistoryService() {
+        this.chatToMessagesMap = new HashMap<>();
     }
 
     @Override
@@ -32,7 +32,20 @@ public class InMemoryHistoryService implements HistoryService {
 
     @Override
     public void deleteHistory(long chatId) {
-        // TODO implement
-        throw new UnsupportedOperationException("deleteHistory method not implemented yet");
+        // Option 1
+        //        chatToMessagesMap.remove(chatId);
+        // Option 2
+        //        List<String> chatMessages = new ArrayList<>();
+        //        chatToMessagesMap.put(chatId, chatMessages);
+        // Option 3
+        List<String> chatMessages = chatToMessagesMap.get(chatId);
+        if (chatMessages != null) {
+            chatMessages.clear();
+        }
+        // Option 4
+        //        chatToMessagesMap.computeIfPresent(chatId, (key, chatMessages) -> {
+        //            chatMessages.clear();
+        //            return chatMessages;
+        //        });
     }
 }

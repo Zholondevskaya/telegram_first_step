@@ -8,7 +8,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 public class Main {
 
     public static void main(String[] args) {
-//        HistoryService historyService = new InMemoryHistoryService(new HashMap<>());
+//        HistoryService historyService = new InMemoryHistoryService();
 
         ConfigurationService configurationService = new BufferedConfigurationServiceImpl();
         HistoryService historyService = new PostgresHistoryService(configurationService);
