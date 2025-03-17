@@ -5,7 +5,7 @@ import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 
-public class Main {
+public class Application {
 
     public static void main(String[] args) {
 //        HistoryService historyService = new InMemoryHistoryService();

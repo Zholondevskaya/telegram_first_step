@@ -6,8 +6,8 @@ WORKDIR /app
 
 # Копируем собранный JAR-файл и конфигурацию
 COPY target/Telegram*.jar app.jar
-COPY target/dependency/ /app/libs/
-COPY src/main/resources/application-docker.properties application-docker.properties
+COPY target/dependency/ libs/
+COPY src/main/resources/application-docker.properties application.properties
 
 # Указываем команду для запуска приложения
-CMD ["java", "-classpath", "app.jar:libs/*", "org.example.Main"]
+CMD ["java", "-Dtelegram.config.location=/app/application.properties", "-classpath", "app.jar:libs/*", "org.example.Application"]

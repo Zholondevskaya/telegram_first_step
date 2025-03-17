@@ -1,9 +1,9 @@
 package org.example;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,7 +12,7 @@ public class BufferedConfigurationServiceImpl implements ConfigurationService {
     private final Map<String, String> parameters;
 
     public BufferedConfigurationServiceImpl() {
-        this.parameters = getParameters("/application.properties");
+        this.parameters = getParameters(System.getProperty("telegram.config.location"));
     }
 
     @Override
@@ -21,11 +21,10 @@ public class BufferedConfigurationServiceImpl implements ConfigurationService {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private Map<String, String> getParameters(String fileName) {
-        Class<?> configurationClass = BufferedConfigurationServiceImpl.class;
-        InputStream inputStream = configurationClass.getResourceAsStream(fileName);
+    private Map<String, String> getParameters(String filePath) {
+        File configFile = new File(filePath);
         try {
-            String data = readFromInputStream(inputStream);
+            String data = readFromFile(configFile);
             String[] lines = data.split("\n");
             Map<String, String> parameters = new HashMap<>();
             for (String line : lines) {
@@ -42,9 +41,9 @@ public class BufferedConfigurationServiceImpl implements ConfigurationService {
         }
     }
 
-    private String readFromInputStream(InputStream inputStream) throws IOException {
+    private String readFromFile(File file) throws IOException {
         StringBuilder resultStringBuilder = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
                 resultStringBuilder.append(line).append("\n");
