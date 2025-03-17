@@ -17,6 +17,7 @@ public class PostgresHistoryService implements HistoryService {
             SELECT message
             FROM request_history
             WHERE chat_id = ?
+            ORDER BY sys_date
             """;
     private static final String DELETE_SQL_QUERY = """
             DELETE FROM request_history
