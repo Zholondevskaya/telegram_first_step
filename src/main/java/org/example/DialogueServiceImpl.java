@@ -29,6 +29,9 @@ public class DialogueServiceImpl implements DialogueService {
                 text = "Сейчас: " + currentTime;
             }
             case ("история"), ("История") -> {
+                text = "История";
+            }
+            case ("Показать историю") -> {
                 List<String> history = historyService.getHistory(chatId);
                 if (history.isEmpty()) {
                     text = "История пуста";

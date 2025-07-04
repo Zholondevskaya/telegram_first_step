@@ -16,7 +16,15 @@ public class ResponseSenderServiceImpl implements ResponseSenderService {
         SendMessage sendMessage = new SendMessage(String.valueOf(chatId), message);
 
         try {
-            telegramClient.execute(sendMessage);
+            if (message.equals("История")) {
+                SendMessage buttonInlineMessages = InlineButtons.createMessageWithInlineKeyboard(chatId);
+                telegramClient.execute(buttonInlineMessages);
+
+            } else {
+                telegramClient.execute(sendMessage);
+                SendMessage buttonMessages = RegularButtons.createMessageWithKeyboard(sendMessage);
+                telegramClient.execute(buttonMessages);
+            }
         } catch (TelegramApiException e) {
             System.out.println("Failed send message to Telegram " + e.getLocalizedMessage());
         }
