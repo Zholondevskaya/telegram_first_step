@@ -11,11 +11,16 @@ public class Application {
 //        HistoryService historyService = new InMemoryHistoryService();
 
         ConfigurationService configurationService = new BufferedConfigurationServiceImpl();
-        HistoryService historyService = new PostgresHistoryService(configurationService);
+        DatabaseConnectionPoolService databaseConnectionPoolService = new DatabaseConnectionPoolServiceImpl(configurationService);
+        HistoryService historyService = new PostgresHistoryService(databaseConnectionPoolService);
         TelegramClient telegramClient = new OkHttpTelegramClient(configurationService.getConfigurationProperty("telegram.token"));
         ResponseSenderService responseSenderService = new ResponseSenderServiceImpl(telegramClient);
         DialogueService dialogueService = new DialogueServiceImpl(historyService, responseSenderService);
         TelegramUpdateConsumer telegramUpdateConsumer = new TelegramUpdateConsumer(dialogueService);
+
+        DatabaseMigrationService databaseMigrationService = new DatabaseMigrationServiceImpl(databaseConnectionPoolService);
+        databaseMigrationService.initSchema();
+
         try (TelegramBotsLongPollingApplication telegramBotsApplication = new TelegramBotsLongPollingApplication()) {
             telegramBotsApplication.registerBot(configurationService.getConfigurationProperty("telegram.token"), telegramUpdateConsumer);
             while (true) {}

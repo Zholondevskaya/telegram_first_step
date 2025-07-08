@@ -24,24 +24,21 @@ public class PostgresHistoryService implements HistoryService {
             WHERE chat_id = ?
             """;
 
-    private final String url;
-    private final String user;
-    private final String password;
+    private final DatabaseConnectionPoolService databaseConnectionPoolService;
 
-    public PostgresHistoryService(ConfigurationService configuration){
-        this.url = configuration.getConfigurationProperty("postgres.url");
-        this.user = configuration.getConfigurationProperty("postgres.user");
-        this.password = configuration.getConfigurationProperty("postgres.password");
+    public PostgresHistoryService(DatabaseConnectionPoolService databaseConnectionPoolService) {
+        this.databaseConnectionPoolService = databaseConnectionPoolService;
     }
 
     @Override
     public void addHistory(long chatId, String message) {
         try {
-            Connection connection = getConnection();
+            Connection connection = databaseConnectionPoolService.getConnection();
             PreparedStatement preparedStatement = getPreparedStatementInsert(connection, chatId, message);
             preparedStatement.executeUpdate();
             // TODO commit transaction
-            closeResources(preparedStatement, connection);
+            preparedStatement.close();
+            databaseConnectionPoolService.returnToPool(connection);
         } catch (Exception e) {
             throw new RuntimeException("Cannot attach message to history", e);
         }
@@ -50,11 +47,13 @@ public class PostgresHistoryService implements HistoryService {
     @Override
     public List<String> getHistory(long chatId) {
         try {
-            Connection connection = getConnection();
+            Connection connection = databaseConnectionPoolService.getConnection();
             PreparedStatement preparedStatement = getPreparedStatement(connection, chatId, SELECT_SQL_QUERY);
             ResultSet resultSet = preparedStatement.executeQuery();
             List<String> selectedRows = extractMessages(resultSet);
-            closeResources(resultSet, preparedStatement, connection);
+            resultSet.close();
+            preparedStatement.close();
+            databaseConnectionPoolService.returnToPool(connection);
             return selectedRows;
         } catch (Exception e) {
             throw new RuntimeException("Cannot get message history", e);
@@ -64,11 +63,12 @@ public class PostgresHistoryService implements HistoryService {
     @Override
     public void deleteHistory(long chatId) {
         try {
-            Connection connection = getConnection();
+            Connection connection = databaseConnectionPoolService.getConnection();
             PreparedStatement preparedStatement = getPreparedStatement(connection, chatId, DELETE_SQL_QUERY);
             preparedStatement.executeUpdate();
             // TODO commit transaction
-            closeResources(preparedStatement, connection);
+            preparedStatement.close();
+            databaseConnectionPoolService.returnToPool(connection);
         } catch (Exception e) {
             throw new RuntimeException("Cannot delete message history", e);
         }
@@ -82,17 +82,6 @@ public class PostgresHistoryService implements HistoryService {
             selectedRows.add(resultSet.getString("message"));
         }
         return selectedRows;
-    }
-
-
-    private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(url, user, password);
-    }
-
-    private void closeResources(AutoCloseable... resources) throws Exception {
-        for (AutoCloseable resource : resources) {
-            resource.close();
-        }
     }
 
     private PreparedStatement getPreparedStatementInsert(Connection connection, long chatId, String message) throws SQLException {
