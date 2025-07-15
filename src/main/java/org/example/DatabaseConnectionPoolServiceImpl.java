@@ -17,7 +17,11 @@ public class DatabaseConnectionPoolServiceImpl implements DatabaseConnectionPool
 
     @Override
     public Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(url, user, password);
+        Connection connection = DriverManager.getConnection(url, user, password);
+        if (!connection.getAutoCommit()) {
+            connection.setAutoCommit(true);
+        }
+        return connection;
     }
 
     @Override
@@ -25,7 +29,7 @@ public class DatabaseConnectionPoolServiceImpl implements DatabaseConnectionPool
         try {
             connection.close();
         } catch (SQLException e) {
-            System.out.println("Cannot close connection");
+            System.out.println("Cannot close connection " + e.getLocalizedMessage());
         }
     }
 }

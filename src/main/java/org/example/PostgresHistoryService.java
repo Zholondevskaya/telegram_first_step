@@ -36,7 +36,6 @@ public class PostgresHistoryService implements HistoryService {
             Connection connection = databaseConnectionPoolService.getConnection();
             PreparedStatement preparedStatement = getPreparedStatementInsert(connection, chatId, message);
             preparedStatement.executeUpdate();
-            // TODO commit transaction
             preparedStatement.close();
             databaseConnectionPoolService.returnToPool(connection);
         } catch (Exception e) {
@@ -66,7 +65,6 @@ public class PostgresHistoryService implements HistoryService {
             Connection connection = databaseConnectionPoolService.getConnection();
             PreparedStatement preparedStatement = getPreparedStatement(connection, chatId, DELETE_SQL_QUERY);
             preparedStatement.executeUpdate();
-            // TODO commit transaction
             preparedStatement.close();
             databaseConnectionPoolService.returnToPool(connection);
         } catch (Exception e) {
