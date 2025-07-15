@@ -14,8 +14,8 @@ public class Application {
         DatabaseConnectionPoolService databaseConnectionPoolService = new DatabaseConnectionPoolServiceImpl(configurationService);
         HistoryService historyService = new PostgresHistoryService(databaseConnectionPoolService);
         TelegramClient telegramClient = new OkHttpTelegramClient(configurationService.getConfigurationProperty("telegram.token"));
-        ResponseSenderService responseSenderService = new ResponseSenderServiceImpl(telegramClient);
-        DialogueService dialogueService = new DialogueServiceImpl(historyService, responseSenderService);
+        MessageChannelService messageChannelService = new TelegramMessageChannelService(telegramClient);
+        DialogueService dialogueService = new DialogueServiceImpl(historyService, messageChannelService);
         TelegramUpdateConsumer telegramUpdateConsumer = new TelegramUpdateConsumer(dialogueService);
 
         DatabaseMigrationService databaseMigrationService = new DatabaseMigrationServiceImpl(databaseConnectionPoolService);

@@ -18,18 +18,25 @@ public class TelegramUpdateConsumer implements LongPollingSingleThreadUpdateCons
         } else if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().getChatId() != null) {
             long chatId = update.getMessage().getChatId();
             String message = update.getMessage().getText();
-            dialogueService.processMessage(chatId, message);
+            RequestMessageDto requestMessageDto = new RequestMessageDto(chatId, message, null);
+            dialogueService.processMessage(requestMessageDto);
         }
     }
 
     private void handleCallbackQuery(CallbackQuery callbackQuery) {
         Long chatId = callbackQuery.getMessage().getChatId();
         String data = callbackQuery.getData();
+        Integer messageId = callbackQuery.getMessage().getMessageId();
+        RequestMessageDto requestMessageDto;
+        String requestMessage;
 
-        if ("button1_pressed".equals(data)) {
-            dialogueService.processMessage(chatId, "Показать историю");
-        } else if ("button2_pressed".equals(data)) {
-            dialogueService.processMessage(chatId, "Очистить историю");
-        }
+        requestMessage = switch (data) {
+            case "button1_pressed" -> "Показать историю";
+            case "button2_pressed" -> "Очистить историю";
+            default -> "Обработчик кнопки отсутствует";
+        };
+
+        requestMessageDto = new RequestMessageDto(chatId, requestMessage, messageId);
+        dialogueService.processMessage(requestMessageDto);
     }
 }

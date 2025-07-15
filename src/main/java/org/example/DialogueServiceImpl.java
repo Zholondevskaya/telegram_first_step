@@ -5,33 +5,45 @@ import java.util.List;
 
 public class DialogueServiceImpl implements DialogueService {
     private final HistoryService historyService;
-    private final ResponseSenderService responseSenderService;
+    private final MessageChannelService messageChannelService;
 
-    public DialogueServiceImpl (HistoryService historyService, ResponseSenderService responseSenderService) {
+    public DialogueServiceImpl (HistoryService historyService, MessageChannelService messageChannelService) {
         this.historyService = historyService;
-        this.responseSenderService = responseSenderService;
+        this.messageChannelService = messageChannelService;
     }
 
     @Override
-    public void processMessage(long chatId, String message) {
-        historyService.addHistory(chatId, message);
-        String responseMessage = createResponse(chatId, message);
-        historyService.addHistory(chatId, responseMessage);
-        responseSenderService.sendResponse(chatId, responseMessage);
+    public void processMessage(RequestMessageDto requestMessageDto) {
+        long chatId = requestMessageDto.chatId();
+        String requestMessage = requestMessageDto.requestMessage();
+
+        historyService.addHistory(chatId, requestMessage);
+        if (requestMessage.equalsIgnoreCase("/start")) {
+            TelegramButtons regularButtons = new RegularButtons();
+            messageChannelService.showButtons(regularButtons.createKeyboardMessage(chatId));
+        } else if (requestMessage.equalsIgnoreCase("история")) {
+            TelegramButtons inlineButtons = new InlineButtons();
+            messageChannelService.showButtons(inlineButtons.createKeyboardMessage(chatId));
+        } else {
+            String responseMessage = createResponse(chatId, requestMessage);
+            historyService.addHistory(chatId, responseMessage);
+            Integer messageId = requestMessageDto.messageId();
+            if (requestMessage.contains("историю") && messageId != null) {
+                messageChannelService.deleteMessage(chatId, messageId);
+            }
+            messageChannelService.sendMessage(chatId, responseMessage);
+        }
     }
 
     private String createResponse(long chatId, String message) {
 
         String text;
-        switch (message) {
-            case ("время"), ("Время") -> {
+        switch (message.toLowerCase()) {
+            case ("время") -> {
                 LocalTime currentTime = LocalTime.now();
                 text = "Сейчас: " + currentTime;
             }
-            case ("история"), ("История") -> {
-                text = "История";
-            }
-            case ("Показать историю") -> {
+            case ("показать историю") -> {
                 List<String> history = historyService.getHistory(chatId);
                 if (history.isEmpty()) {
                     text = "История пуста";
@@ -39,9 +51,9 @@ public class DialogueServiceImpl implements DialogueService {
                     text = String.join(", ", history);
                 }
             }
-            case ("очистить историю"), ("Очистить историю") -> {
+            case ("очистить историю") -> {
                 historyService.deleteHistory(chatId);
-                text = "Очистка выполнена";
+                text = "Выполнена очистка истории";
             }
             default -> {
                 text = "Вы сказали: " + message;
