@@ -1,5 +1,8 @@
 package org.example;
 
+import org.example.migration.Migration;
+import org.example.migration.V1Migration;
+import org.example.migration.V2Migration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -27,9 +30,11 @@ public class Application {
         BlockStatisticsService blockStatisticsService = new BlockStatisticsServiceImpl(statisticsDao);
         TelegramUpdateConsumer telegramUpdateConsumer = new TelegramUpdateConsumer(dialogueService, blockStatisticsService);
 
+        Migration v1Migration = new V1Migration(databaseConnectionPoolService);
+        Migration v2Migration = new V2Migration(databaseConnectionPoolService);
+        v1Migration.setNext(v2Migration);
 
-        DatabaseMigrationService databaseMigrationService = new DatabaseMigrationServiceImpl(databaseConnectionPoolService);
-        databaseMigrationService.initSchema();
+        v1Migration.migrate();
 
         try (TelegramBotsLongPollingApplication telegramBotsApplication = new TelegramBotsLongPollingApplication()) {
             telegramBotsApplication.registerBot(configurationService.getConfigurationProperty("telegram.token"), telegramUpdateConsumer);
