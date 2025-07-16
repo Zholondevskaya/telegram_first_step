@@ -1,6 +1,8 @@
 package org.example;
 
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -8,6 +10,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 public class TelegramMessageChannelService implements MessageChannelService {
+    private static final Logger logger = LoggerFactory.getLogger(TelegramMessageChannelService.class);
+
     private final TelegramClient telegramClient;
 
     public TelegramMessageChannelService(TelegramClient telegramClient) {
@@ -17,7 +21,7 @@ public class TelegramMessageChannelService implements MessageChannelService {
     @Override
     public void sendMessage(long chatId, String message) {
         SendMessage sendMessage = new SendMessage(String.valueOf(chatId), message);
-        executeInternal(sendMessage, "Failed send message to Telegram");
+        executeInternal(sendMessage, "Failed send message to Telegram:");
     }
 
     @Override
@@ -27,19 +31,19 @@ public class TelegramMessageChannelService implements MessageChannelService {
                 .messageId(messageId)
                 .build();
 
-        executeInternal(message, "Failed delete message from Telegram");
+        executeInternal(message, "Failed delete message from Telegram:");
     }
 
     @Override
     public void showButtons(SendMessage buttonMessage) {
-        executeInternal(buttonMessage, "Failed show buttons");
+        executeInternal(buttonMessage, "Failed show buttons:");
     }
 
     private void executeInternal(BotApiMethod<?> botApiMethod, String errorMessage) {
         try {
             telegramClient.execute(botApiMethod);
         } catch (TelegramApiException e) {
-            System.out.printf("%s %s%n", errorMessage, e.getLocalizedMessage());
+            logger.info("{} {}", errorMessage, e.getLocalizedMessage());
         }
     }
 }

@@ -1,10 +1,15 @@
 package org.example;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConnectionPoolServiceImpl implements DatabaseConnectionPoolService {
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseConnectionPoolServiceImpl.class);
+
     private final String url;
     private final String user;
     private final String password;
@@ -29,7 +34,7 @@ public class DatabaseConnectionPoolServiceImpl implements DatabaseConnectionPool
         try {
             connection.close();
         } catch (SQLException e) {
-            System.out.println("Cannot close connection " + e.getLocalizedMessage());
+            logger.info("Cannot close connection: {}", e.getLocalizedMessage());
         }
     }
 }

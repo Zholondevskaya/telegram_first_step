@@ -1,5 +1,8 @@
 package org.example;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
@@ -7,9 +10,13 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 public class Application {
 
-    public static void main(String[] args) {
-//        HistoryService historyService = new InMemoryHistoryService();
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
+    public static void main(String[] args) {
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
+
+//        HistoryService historyService = new InMemoryHistoryService();
         ConfigurationService configurationService = new BufferedConfigurationServiceImpl();
         DatabaseConnectionPoolService databaseConnectionPoolService = new DatabaseConnectionPoolServiceImpl(configurationService);
         HistoryService historyService = new PostgresHistoryService(databaseConnectionPoolService);
@@ -25,7 +32,7 @@ public class Application {
             telegramBotsApplication.registerBot(configurationService.getConfigurationProperty("telegram.token"), telegramUpdateConsumer);
             while (true) {}
         } catch (Exception e) {
-            System.out.println("Failed to register bot " + e.getLocalizedMessage());
+            logger.info("Failed to register bot: {}", e.getLocalizedMessage());
         }
     }
 
