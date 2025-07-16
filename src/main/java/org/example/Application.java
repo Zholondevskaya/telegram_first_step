@@ -23,7 +23,10 @@ public class Application {
         TelegramClient telegramClient = new OkHttpTelegramClient(configurationService.getConfigurationProperty("telegram.token"));
         MessageChannelService messageChannelService = new TelegramMessageChannelService(telegramClient);
         DialogueService dialogueService = new DialogueServiceImpl(historyService, messageChannelService);
-        TelegramUpdateConsumer telegramUpdateConsumer = new TelegramUpdateConsumer(dialogueService);
+        StatisticsDao statisticsDao = new PostgresStatisticsDao(databaseConnectionPoolService);
+        BlockStatisticsService blockStatisticsService = new BlockStatisticsServiceImpl(statisticsDao);
+        TelegramUpdateConsumer telegramUpdateConsumer = new TelegramUpdateConsumer(dialogueService, blockStatisticsService);
+
 
         DatabaseMigrationService databaseMigrationService = new DatabaseMigrationServiceImpl(databaseConnectionPoolService);
         databaseMigrationService.initSchema();
