@@ -1,18 +1,14 @@
 package org.example;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.LocalTime;
 import java.util.List;
 
 public class DialogueServiceImpl implements DialogueService {
-    private static final Logger logger = LoggerFactory.getLogger(DialogueServiceImpl.class);
 
     private final HistoryService historyService;
     private final MessageChannelService messageChannelService;
 
-    public DialogueServiceImpl (HistoryService historyService, MessageChannelService messageChannelService) {
+    public DialogueServiceImpl(HistoryService historyService, MessageChannelService messageChannelService) {
         this.historyService = historyService;
         this.messageChannelService = messageChannelService;
     }
@@ -21,24 +17,32 @@ public class DialogueServiceImpl implements DialogueService {
     public void processMessage(RequestMessageDto requestMessageDto) {
         long chatId = requestMessageDto.chatId();
         String requestMessage = requestMessageDto.requestMessage();
+        boolean isInlineButtonClick = false;
+        String responseMessage;
 
-        historyService.addHistory(chatId, requestMessage);
         if (requestMessage.equalsIgnoreCase("/start")) {
-            TelegramButtons regularButtons = new RegularButtons();
-            messageChannelService.showButtons(regularButtons.createKeyboardMessage(chatId));
+            historyService.addHistory(chatId, requestMessage, true, isInlineButtonClick);
+            messageChannelService.showButtons(new RegularButtons().createKeyboardMessage(chatId));
+            historyService.addHistory(chatId, "Отображена ReplyKeyboard", true, isInlineButtonClick);
+
         } else if (requestMessage.equalsIgnoreCase("история")) {
-            TelegramButtons inlineButtons = new InlineButtons();
-            messageChannelService.showButtons(inlineButtons.createKeyboardMessage(chatId));
+            historyService.addHistory(chatId, requestMessage, true, isInlineButtonClick);
+            messageChannelService.showButtons(new InlineButtons().createKeyboardMessage(chatId));
+            historyService.addHistory(chatId, "Отображена InlineKeyboard", true, isInlineButtonClick);
+
         } else {
-            String responseMessage = createResponse(chatId, requestMessage);
-            historyService.addHistory(chatId, responseMessage);
             Integer messageId = requestMessageDto.messageId();
             if (requestMessage.contains("историю") && messageId != null) {
-                logger.info("Пользователь воспользовался inline кнопкой");
+                isInlineButtonClick = true;
                 messageChannelService.deleteMessage(chatId, messageId);
+                historyService.addHistory(chatId, "Удалена InlineKeyboard", false, false);
             }
+            historyService.addHistory(chatId, requestMessage, true, isInlineButtonClick);
+            responseMessage = createResponse(chatId, requestMessage);
             messageChannelService.sendMessage(chatId, responseMessage);
+            historyService.addHistory(chatId, responseMessage, false, false);
         }
+
     }
 
     private String createResponse(long chatId, String message) {

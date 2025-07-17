@@ -14,7 +14,7 @@ public class InMemoryHistoryService implements HistoryService {
     }
 
     @Override
-    public void addHistory(long chatId, String message) {
+    public void addHistory(long chatId, String message, boolean isUserRequest, boolean isInlineButtonClick) {
 
         List<String> chatMessages = chatToMessagesMap.computeIfAbsent(chatId, k -> new ArrayList<>());
 //        List<String> chatMessages = chatToMessagesMap.get(chatId);

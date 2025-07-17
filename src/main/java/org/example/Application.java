@@ -3,6 +3,7 @@ package org.example;
 import org.example.migration.Migration;
 import org.example.migration.V1Migration;
 import org.example.migration.V2Migration;
+import org.example.migration.V3Migration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -22,7 +23,7 @@ public class Application {
 //        HistoryService historyService = new InMemoryHistoryService();
         ConfigurationService configurationService = new BufferedConfigurationServiceImpl();
         DatabaseConnectionPoolService databaseConnectionPoolService = new DatabaseConnectionPoolServiceImpl(configurationService);
-        HistoryService historyService = new PostgresHistoryService(databaseConnectionPoolService);
+        HistoryService historyService = new PostgresHistoryDao(databaseConnectionPoolService);
         TelegramClient telegramClient = new OkHttpTelegramClient(configurationService.getConfigurationProperty("telegram.token"));
         MessageChannelService messageChannelService = new TelegramMessageChannelService(telegramClient);
         DialogueService dialogueService = new DialogueServiceImpl(historyService, messageChannelService);
@@ -32,7 +33,9 @@ public class Application {
 
         Migration v1Migration = new V1Migration(databaseConnectionPoolService);
         Migration v2Migration = new V2Migration(databaseConnectionPoolService);
+        Migration v3Migration = new V3Migration(databaseConnectionPoolService);
         v1Migration.setNext(v2Migration);
+        v2Migration.setNext(v3Migration);
 
         v1Migration.migrate();
 

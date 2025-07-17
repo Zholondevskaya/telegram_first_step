@@ -11,7 +11,7 @@ class InMemoryHistoryServiceTest {
     @Test
     void addHistory_shouldNotThrow_whenGoodParams() {
         InMemoryHistoryService service = new InMemoryHistoryService();
-        assertDoesNotThrow(() -> service.addHistory(123, "Hello"));
+        assertDoesNotThrow(() -> service.addHistory(123, "Hello", true, true));
     }
 
     @Test

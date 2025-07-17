@@ -7,11 +7,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PostgresHistoryService implements HistoryService {
+public class PostgresHistoryDao implements HistoryService {
 
     private static final String INSERT_SQL_QUERY = """
-            INSERT into request_history (chat_id, message, sys_date, id)
-            VALUES (?, ?, ?, nextval('seq_request_history'))
+            INSERT into request_history (chat_id, message, sys_date, id, is_user_request, is_inline_button_click)
+            VALUES (?, ?, ?, nextval('seq_request_history'), ?, ?)
             """;
     private static final String SELECT_SQL_QUERY = """
             SELECT message
@@ -26,15 +26,15 @@ public class PostgresHistoryService implements HistoryService {
 
     private final DatabaseConnectionPoolService databaseConnectionPoolService;
 
-    public PostgresHistoryService(DatabaseConnectionPoolService databaseConnectionPoolService) {
+    public PostgresHistoryDao(DatabaseConnectionPoolService databaseConnectionPoolService) {
         this.databaseConnectionPoolService = databaseConnectionPoolService;
     }
 
     @Override
-    public void addHistory(long chatId, String message) {
+    public void addHistory(long chatId, String message, boolean isUserRequest, boolean isInlineButtonClick) {
         try {
             Connection connection = databaseConnectionPoolService.getConnection();
-            PreparedStatement preparedStatement = getPreparedStatementInsert(connection, chatId, message);
+            PreparedStatement preparedStatement = getPreparedStatementInsert(connection, chatId, message, isUserRequest, isInlineButtonClick);
             preparedStatement.executeUpdate();
             preparedStatement.close();
             databaseConnectionPoolService.returnToPool(connection);
@@ -82,11 +82,13 @@ public class PostgresHistoryService implements HistoryService {
         return selectedRows;
     }
 
-    private PreparedStatement getPreparedStatementInsert(Connection connection, long chatId, String message) throws SQLException {
+    private PreparedStatement getPreparedStatementInsert(Connection connection, long chatId, String message, boolean isUserRequest, boolean isInlineButtonClick) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(INSERT_SQL_QUERY);
         preparedStatement.setInt(1, Long.valueOf(chatId).intValue());
         preparedStatement.setString(2, message);
         preparedStatement.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+        preparedStatement.setBoolean(4, isUserRequest);
+        preparedStatement.setBoolean(5, isInlineButtonClick);
         return preparedStatement;
     }
 

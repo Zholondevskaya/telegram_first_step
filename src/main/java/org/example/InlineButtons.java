@@ -35,4 +35,12 @@ public class InlineButtons implements TelegramButtons {
 
         return message;
     }
+
+    public String getButtonText(String data) {
+        return switch (data) {
+            case "button1_pressed" -> "Показать историю";
+            case "button2_pressed" -> "Очистить историю";
+            default -> "Обработчик кнопки отсутствует";
+        };
+    }
 }

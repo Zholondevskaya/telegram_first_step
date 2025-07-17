@@ -39,11 +39,7 @@ public class TelegramUpdateConsumer implements LongPollingSingleThreadUpdateCons
         RequestMessageDto requestMessageDto;
         String requestMessage;
 
-        requestMessage = switch (data) {
-            case "button1_pressed" -> "Показать историю";
-            case "button2_pressed" -> "Очистить историю";
-            default -> "Обработчик кнопки отсутствует";
-        };
+        requestMessage = new InlineButtons().getButtonText(data);
 
         requestMessageDto = new RequestMessageDto(chatId, requestMessage, messageId);
         dialogueService.processMessage(requestMessageDto);
